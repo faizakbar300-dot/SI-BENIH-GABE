@@ -1,0 +1,3790 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SI-BENIH GABE | Sistem Informasi Data Perbenihan</title>
+
+<style>
+
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --primary:#0b7a5c;
+    --primary2:#075c48;
+    --light:#eef8f4;
+    --accent:#f2b84b;
+    --text:#20302a;
+    --muted:#6d7c76;
+    --white:#ffffff;
+    --danger:#d9534f;
+    --border:#e5ece9;
+}
+
+body{
+    font-family:
+        Arial,
+        "Segoe UI",
+        sans-serif;
+
+    background:#f5f8f7;
+    color:var(--text);
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+.login-page{
+
+    position:fixed;
+
+    inset:0;
+
+    width:100%;
+    height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b7a5c,
+            #ffffff
+        );
+
+    z-index:9999;
+}
+
+.login-box{
+
+    width:360px;
+
+    padding:35px;
+
+    background:#285035;
+
+    border-radius:16px;
+
+    text-align:center;
+
+    box-shadow:
+        0 15px 40px
+        rgba(0,0,0,.25);
+}
+
+.login-logo{
+
+    width:65px;
+    height:65px;
+
+    margin:0 auto 15px;
+
+    background:white;
+
+    border-radius:18px;
+
+    display:grid;
+
+    place-items:center;
+
+    font-size:34px;
+}
+
+.login-box h1{
+
+    color:white;
+
+    font-size:27px;
+
+    margin-bottom:5px;
+}
+
+.login-box p.subtitle{
+
+    color:#d9eee7;
+
+    font-size:13px;
+
+    margin-bottom:25px;
+}
+
+.login-box input{
+
+    display:block;
+
+    width:100%;
+
+    padding:13px;
+
+    margin:12px 0;
+
+    border:none;
+
+    border-radius:9px;
+
+    outline:none;
+
+    background:white;
+
+    color:#222;
+}
+
+.login-box input:focus{
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255,255,255,.25);
+}
+
+.login-box button{
+
+    display:block;
+
+    width:100%;
+
+    padding:13px;
+
+    margin-top:16px;
+
+    border:none;
+
+    border-radius:9px;
+
+    background:#0b7a5c;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.login-box button:hover{
+
+    background:#096449;
+
+    transform:translateY(-1px);
+}
+
+#loginMessage{
+
+    min-height:20px;
+
+    margin-top:13px;
+
+    color:#ffd2d2;
+
+    font-size:13px;
+}
+
+.login-info{
+
+    margin-top:20px;
+
+    padding-top:15px;
+
+    border-top:
+        1px solid
+        rgba(255,255,255,.15);
+
+    color:#cfe5de;
+
+    font-size:12px;
+
+    line-height:1.7;
+}
+
+
+/* =====================================================
+   DASHBOARD APP
+===================================================== */
+
+.app{
+
+    display:none;
+
+    min-height:100vh;
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar{
+
+    width:250px;
+
+    background:
+        linear-gradient(
+            180deg,
+            var(--primary2),
+            var(--primary)
+        );
+
+    color:white;
+
+    padding:22px 15px;
+
+    position:fixed;
+
+    left:0;
+    top:0;
+    bottom:0;
+
+    z-index:100;
+}
+
+.brand{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:
+        5px 10px 25px;
+}
+
+.logo{
+
+    width:45px;
+    height:45px;
+
+    border-radius:13px;
+
+    background:white;
+
+    color:var(--primary);
+
+    display:grid;
+
+    place-items:center;
+
+    font-size:23px;
+
+    font-weight:800;
+}
+
+.brand h1{
+
+    font-size:18px;
+}
+
+.brand small{
+
+    opacity:.75;
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+.nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:7px;
+}
+
+.nav button{
+
+    width:100%;
+
+    border:0;
+
+    background:transparent;
+
+    color:#dff5ed;
+
+    text-align:left;
+
+    padding:13px 14px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.nav button:hover,
+.nav button.active{
+
+    background:
+        rgba(255,255,255,.17);
+
+    color:white;
+}
+
+.nav span{
+
+    margin-right:10px;
+}
+
+.sidebar-footer{
+
+    position:absolute;
+
+    bottom:20px;
+
+    left:25px;
+
+    right:25px;
+
+    font-size:12px;
+
+    opacity:.7;
+
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main{
+
+    margin-left:250px;
+
+    width:
+        calc(100% - 250px);
+
+    min-height:100vh;
+}
+
+
+/* =====================================================
+   TOPBAR
+===================================================== */
+
+.topbar{
+
+    height:70px;
+
+    background:white;
+
+    border-bottom:
+        1px solid #e4ebe8;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 30px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:50;
+}
+
+.topbar h2{
+
+    font-size:20px;
+}
+
+.topbar small{
+
+    color:var(--muted);
+}
+
+.user-info{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-size:14px;
+}
+
+.role-badge{
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    background:#eaf6f1;
+
+    color:var(--primary);
+
+    font-size:11px;
+
+    font-weight:bold;
+}
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content{
+
+    padding:28px;
+
+    max-width:1500px;
+
+    margin:auto;
+}
+
+.page{
+
+    display:none;
+}
+
+.page.active{
+
+    display:block;
+}
+
+
+/* =====================================================
+   WELCOME
+===================================================== */
+
+.welcome{
+
+    background:
+        linear-gradient(
+            120deg,
+            var(--primary),
+            #13966f
+        );
+
+    color:white;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    margin-bottom:22px;
+}
+
+.welcome h1{
+
+    font-size:26px;
+
+    margin-bottom:7px;
+}
+
+.welcome p{
+
+    opacity:.9;
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:17px;
+
+    margin-bottom:22px;
+}
+
+.card{
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:15px;
+
+    padding:20px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(20,60,45,.04);
+}
+
+.stat{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+.stat-icon{
+
+    width:48px;
+    height:48px;
+
+    border-radius:13px;
+
+    background:var(--light);
+
+    display:grid;
+
+    place-items:center;
+
+    font-size:23px;
+}
+
+.stat h3{
+
+    font-size:26px;
+
+    margin-top:8px;
+}
+
+.stat p{
+
+    color:var(--muted);
+
+    font-size:13px;
+}
+
+
+/* =====================================================
+   GRID
+===================================================== */
+
+.grid2{
+
+    display:grid;
+
+    grid-template-columns:
+        1.35fr 1fr;
+
+    gap:20px;
+}
+
+.card-title{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:18px;
+}
+
+.card-title h3{
+
+    font-size:17px;
+}
+
+.muted{
+
+    color:var(--muted);
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.table-wrapper{
+
+    width:100%;
+
+    overflow-x:auto;
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:700px;
+}
+
+th,
+td{
+
+    padding:12px 10px;
+
+    border-bottom:
+        1px solid #edf1ef;
+
+    text-align:left;
+
+    font-size:13px;
+}
+
+th{
+
+    color:#62726b;
+
+    font-size:12px;
+
+    background:#fafcfb;
+}
+
+
+/* =====================================================
+   BADGE
+===================================================== */
+
+.badge{
+
+    display:inline-block;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    font-size:11px;
+
+    font-weight:700;
+}
+
+.badge.good{
+
+    background:#e2f6ec;
+
+    color:#13724e;
+}
+
+.badge.warn{
+
+    background:#fff4d9;
+
+    color:#986b08;
+}
+
+.badge.danger{
+
+    background:#fde8e7;
+
+    color:#a93d39;
+}
+
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+.actions{
+
+    display:flex;
+
+    gap:7px;
+
+    flex-wrap:wrap;
+}
+
+.btn{
+
+    border:0;
+
+    border-radius:9px;
+
+    padding:9px 13px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.2s;
+}
+
+.btn:hover{
+
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+
+    background:var(--primary);
+
+    color:white;
+}
+
+.btn-primary:hover{
+
+    background:var(--primary2);
+}
+
+.btn-secondary{
+
+    background:#edf5f2;
+
+    color:var(--primary);
+}
+
+.btn-danger{
+
+    background:#fdeceb;
+
+    color:#b13d39;
+}
+
+.btn-edit{
+
+    background:#fff4d9;
+
+    color:#986b08;
+}
+
+.logout-btn{
+
+    margin-top:20px;
+
+    width:100%;
+
+    padding:10px;
+
+    border:1px solid
+        rgba(255,255,255,.2);
+
+    background:
+        rgba(255,255,255,.08);
+
+    color:white;
+
+    border-radius:9px;
+
+    cursor:pointer;
+}
+
+.logout-btn:hover{
+
+    background:
+        rgba(255,255,255,.18);
+}
+
+
+/* =====================================================
+   TOOLBAR
+===================================================== */
+
+.toolbar{
+
+    display:flex;
+
+    gap:10px;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+}
+
+.search{
+
+    padding:10px 13px;
+
+    border:
+        1px solid #dbe5e1;
+
+    border-radius:9px;
+
+    outline:none;
+
+    min-width:240px;
+
+    background:white;
+}
+
+.search:focus{
+
+    border-color:
+        var(--primary);
+}
+
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+.section-head{
+
+    margin-bottom:20px;
+}
+
+.section-head h2{
+
+    font-size:24px;
+}
+
+.section-head p{
+
+    color:var(--muted);
+
+    margin-top:5px;
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+        rgba(10,30,24,.55);
+
+    z-index:500;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:20px;
+}
+
+.modal.show{
+
+    display:flex;
+}
+
+.modal-box{
+
+    background:white;
+
+    width:
+        min(700px,100%);
+
+    max-height:90vh;
+
+    overflow:auto;
+
+    border-radius:16px;
+
+    padding:24px;
+}
+
+.modal-head{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+}
+
+.close{
+
+    border:0;
+
+    background:#edf2f0;
+
+    width:35px;
+    height:35px;
+
+    border-radius:50%;
+
+    cursor:pointer;
+
+    font-size:20px;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:14px;
+}
+
+.field{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+}
+
+.field.full{
+
+    grid-column:
+        1 / -1;
+}
+
+.field label{
+
+    font-size:12px;
+
+    font-weight:700;
+}
+
+.field input,
+.field select{
+
+    padding:11px;
+
+    border:
+        1px solid #d9e3df;
+
+    border-radius:8px;
+
+    outline:none;
+
+    background:white;
+}
+
+.field input:focus,
+.field select:focus{
+
+    border-color:
+        var(--primary);
+}
+
+.form-actions{
+
+    margin-top:20px;
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+}
+
+
+/* =====================================================
+   EMPTY
+===================================================== */
+
+.empty{
+
+    text-align:center;
+
+    padding:35px;
+
+    color:var(--muted);
+}
+
+
+/* =====================================================
+   STOCK SUMMARY
+===================================================== */
+
+.stock-item{
+
+    margin-bottom:18px;
+}
+
+.stock-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:7px;
+
+    font-size:13px;
+}
+
+.bar{
+
+    height:10px;
+
+    background:#e8efec;
+
+    border-radius:10px;
+
+    overflow:hidden;
+}
+
+.bar i{
+
+    display:block;
+
+    height:100%;
+
+    background:
+        var(--primary);
+
+    border-radius:10px;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+.mobile-menu{
+
+    display:none;
+
+    border:0;
+
+    background:none;
+
+    font-size:23px;
+
+    cursor:pointer;
+
+    margin-right:12px;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media(max-width:1000px){
+
+    .cards{
+
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .grid2{
+
+        grid-template-columns:1fr;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:720px){
+
+    .sidebar{
+
+        transform:
+            translateX(-100%);
+
+        transition:.25s;
+    }
+
+    .sidebar.open{
+
+        transform:
+            translateX(0);
+    }
+
+    .main{
+
+        margin-left:0;
+
+        width:100%;
+    }
+
+    .mobile-menu{
+
+        display:block;
+    }
+
+    .topbar{
+
+        padding:0 15px;
+    }
+
+    .content{
+
+        padding:17px;
+    }
+
+    .cards{
+
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .toolbar{
+
+        align-items:stretch;
+
+        flex-direction:column;
+    }
+
+    .search{
+
+        width:100%;
+
+        min-width:0;
+    }
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+    }
+
+    .field.full{
+
+        grid-column:auto;
+    }
+
+    .user-info{
+
+        font-size:12px;
+    }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media(max-width:460px){
+
+    .login-box{
+
+        width:
+            calc(100% - 30px);
+
+        padding:25px;
+    }
+
+    .cards{
+
+        grid-template-columns:1fr;
+    }
+
+    .topbar h2{
+
+        font-size:16px;
+    }
+
+    .content{
+
+        padding:12px;
+    }
+
+    .welcome{
+
+        padding:20px;
+    }
+
+    .welcome h1{
+
+        font-size:21px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<div class="login-page" id="loginPage">
+
+    <div class="login-box">
+
+        <div class="login-logo">
+            🌱
+        </div>
+
+        <h1>SI-BENIH GABE</h1>
+
+        <p class="subtitle">
+            Sistem Informasi Data Perbenihan
+        </p>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Username"
+            autocomplete="username"
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+        <button
+            type="button"
+            id="loginButton"
+        >
+            Masuk
+        </button>
+
+        <p id="loginMessage"></p>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     DASHBOARD APP
+===================================================== -->
+
+<div class="app" id="dashboardApp">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+
+            <div class="logo">
+                🌱
+            </div>
+
+            <div>
+
+                <h1>
+                    SI-BENIH GABE
+                </h1>
+
+                <small>
+                    UPTD Benih Induk
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <nav class="nav">
+
+            <button
+                class="active"
+                onclick="showPage('dashboard',this)"
+            >
+                <span>🏠</span>
+                Dashboard
+            </button>
+
+            <button
+                onclick="showPage('produksi',this)"
+            >
+                <span>🌾</span>
+                Data Produksi
+            </button>
+
+            <button
+                onclick="showPage('stok',this)"
+            >
+                <span>📦</span>
+                Data Stok
+            </button>
+
+            <button
+                onclick="showPage('distribusi',this)"
+            >
+                <span>🚚</span>
+                Data Distribusi
+            </button>
+
+            <button
+                onclick="showPage('kebutuhan',this)"
+            >
+                <span>📋</span>
+                Data Kebutuhan
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            Sistem Informasi Data Perbenihan<br>
+            Hutaraja
+
+            <button
+                class="logout-btn"
+                onclick="logout()"
+            >
+                🚪 Keluar
+            </button>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div style="display:flex;align-items:center">
+
+                <button
+                    class="mobile-menu"
+                    onclick="toggleSide()"
+                >
+                    ☰
+                </button>
+
+                <div>
+
+                    <h2 id="pageTitle">
+                        Dashboard
+                    </h2>
+
+                    <small id="today"></small>
+
+                </div>
+
+            </div>
+
+
+            <div class="user-info">
+
+                👤
+
+                <b id="userName">
+                    User
+                </b>
+
+                <span
+                    class="role-badge"
+                    id="userRole"
+                >
+                    Pengguna
+                </span>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- CONTENT -->
+
+        <div class="content">
+
+
+            <!-- =================================================
+                 DASHBOARD
+            ================================================= -->
+
+            <section
+                id="dashboard"
+                class="page active"
+            >
+
+                <div class="welcome">
+
+                    <h1>
+                        Selamat Datang di
+                        SI-BENIH GABE 🌱
+                    </h1>
+
+                    <p>
+                        Sistem Informasi Data Perbenihan
+                        UPTD Benih Induk Aneka Tanaman
+                        Gabe Hutaraja.
+                    </p>
+
+                </div>
+
+
+                <div class="cards">
+
+                    <div class="card stat">
+
+                        <div>
+
+                            <p>
+                                Total Produksi
+                            </p>
+
+                            <h3 id="sProduksi">
+                                0
+                            </h3>
+
+                            <p>
+                                data produksi
+                            </p>
+
+                        </div>
+
+                        <div class="stat-icon">
+                            🌾
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat">
+
+                        <div>
+
+                            <p>
+                                Total Stok
+                            </p>
+
+                            <h3 id="sStok">
+                                0
+                            </h3>
+
+                            <p>
+                                unit benih
+                            </p>
+
+                        </div>
+
+                        <div class="stat-icon">
+                            📦
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat">
+
+                        <div>
+
+                            <p>
+                                Total Distribusi
+                            </p>
+
+                            <h3 id="sDistribusi">
+                                0
+                            </h3>
+
+                            <p>
+                                data distribusi
+                            </p>
+
+                        </div>
+
+                        <div class="stat-icon">
+                            🚚
+                        </div>
+
+                    </div>
+
+
+                    <div class="card stat">
+
+                        <div>
+
+                            <p>
+                                Total Kebutuhan
+                            </p>
+
+                            <h3 id="sKebutuhan">
+                                0
+                            </h3>
+
+                            <p>
+                                data kebutuhan
+                            </p>
+
+                        </div>
+
+                        <div class="stat-icon">
+                            📋
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid2">
+
+
+                    <div class="card">
+
+                        <div class="card-title">
+
+                            <h3>
+                                Ringkasan Stok Benih
+                            </h3>
+
+                        </div>
+
+                        <div id="stockSummary">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-title">
+
+                            <h3>
+                                Aktivitas Terbaru
+                            </h3>
+
+                        </div>
+
+                        <div id="activity">
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PRODUKSI
+            ================================================= -->
+
+            <section
+                id="produksi"
+                class="page"
+            >
+
+                <div class="section-head">
+
+                    <h2>
+                        Data Produksi
+                    </h2>
+
+                    <p>
+                        Kelola data produksi benih tanaman.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="toolbar">
+
+                        <input
+                            class="search"
+                            id="searchProduksi"
+                            oninput="renderAll()"
+                            placeholder="🔎 Cari tanaman/varietas..."
+                        >
+
+                        <button
+                            class="btn btn-primary admin-only"
+                            onclick="openModal('produksi')"
+                        >
+                            ＋ Tambah Produksi
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Tanaman</th>
+                                    <th>Varietas</th>
+                                    <th>Luas (Ha)</th>
+                                    <th>Tgl Tanam</th>
+                                    <th>Perkiraan</th>
+                                    <th>Realisasi</th>
+                                    <th>Status</th>
+                                    <th class="admin-column">
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tableProduksi"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 STOK
+            ================================================= -->
+
+            <section
+                id="stok"
+                class="page"
+            >
+
+                <div class="section-head">
+
+                    <h2>
+                        Data Stok
+                    </h2>
+
+                    <p>
+                        Kelola persediaan benih masuk dan keluar.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="toolbar">
+
+                        <input
+                            class="search"
+                            id="searchStok"
+                            oninput="renderAll()"
+                            placeholder="🔎 Cari jenis/varietas..."
+                        >
+
+                        <button
+                            class="btn btn-primary admin-only"
+                            onclick="openModal('stok')"
+                        >
+                            ＋ Tambah Stok
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Jenis/Varietas</th>
+                                    <th>Jumlah</th>
+                                    <th>Satuan</th>
+                                    <th>Tgl Masuk</th>
+                                    <th>Tgl Keluar</th>
+                                    <th>Stok Akhir</th>
+                                    <th class="admin-column">
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tableStok"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 DISTRIBUSI
+            ================================================= -->
+
+            <section
+                id="distribusi"
+                class="page"
+            >
+
+                <div class="section-head">
+
+                    <h2>
+                        Data Distribusi
+                    </h2>
+
+                    <p>
+                        Catat penyaluran benih kepada
+                        kelompok tani/penerima.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="toolbar">
+
+                        <input
+                            class="search"
+                            id="searchDistribusi"
+                            oninput="renderAll()"
+                            placeholder="🔎 Cari penerima/jenis benih..."
+                        >
+
+                        <button
+                            class="btn btn-primary admin-only"
+                            onclick="openModal('distribusi')"
+                        >
+                            ＋ Tambah Distribusi
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Penerima</th>
+                                    <th>Desa/Kecamatan</th>
+                                    <th>Jenis Benih</th>
+                                    <th>Jumlah</th>
+                                    <th>Tanggal</th>
+                                    <th>Tujuan</th>
+                                    <th class="admin-column">
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tableDistribusi"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 KEBUTUHAN
+            ================================================= -->
+
+            <section
+                id="kebutuhan"
+                class="page"
+            >
+
+                <div class="section-head">
+
+                    <h2>
+                        Data Kebutuhan
+                    </h2>
+
+                    <p>
+                        Kelola permintaan dan kebutuhan benih petani.
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="toolbar">
+
+                        <input
+                            class="search"
+                            id="searchKebutuhan"
+                            oninput="renderAll()"
+                            placeholder="🔎 Cari tanaman/petani..."
+                        >
+
+                        <button
+                            class="btn btn-primary admin-only"
+                            onclick="openModal('kebutuhan')"
+                        >
+                            ＋ Tambah Kebutuhan
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Tanaman</th>
+                                    <th>Varietas</th>
+                                    <th>Jumlah</th>
+                                    <th>Kelompok/Petani</th>
+                                    <th>Waktu Kebutuhan</th>
+                                    <th class="admin-column">
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tableKebutuhan"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+</div>
+
+
+
+<!-- =====================================================
+     MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="modal"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <h2 id="modalTitle">
+                Tambah Data
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="dataForm">
+
+            <div
+                id="formFields"
+                class="form-grid"
+            >
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="closeModal()"
+                >
+                    Batal
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Simpan Data
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   DATA
+===================================================== */
+
+let currentRole = "";
+let currentUsername = "";
+
+let currentType = "";
+let editingId = null;
+
+
+/* =====================================================
+   DATA AWAL
+===================================================== */
+
+const defaultData = {
+
+    produksi:[
+        {
+            id:1,
+            tanaman:"Padi",
+            varietas:"Inpari 32",
+            luas:"2",
+            tanam:"2026-08-01",
+            perkiraan:"500",
+            realisasi:"450",
+            status:"Selesai"
+        },
+        {
+            id:2,
+            tanaman:"Jagung",
+            varietas:"Bisi 18",
+            luas:"3",
+            tanam:"2026-08-10",
+            perkiraan:"700",
+            realisasi:"500",
+            status:"Berjalan"
+        }
+    ],
+
+    stok:[
+        {
+            id:1,
+            jenis:"Benih Padi Inpari 32",
+            jumlah:1000,
+            satuan:"Kg",
+            masuk:"2026-08-01",
+            keluar:250
+        },
+        {
+            id:2,
+            jenis:"Benih Jagung Bisi 18",
+            jumlah:800,
+            satuan:"Kg",
+            masuk:"2026-08-10",
+            keluar:100
+        }
+    ],
+
+    distribusi:[
+        {
+            id:1,
+            penerima:"Kelompok Tani Makmur",
+            lokasi:"Hutaraja",
+            jenis:"Padi Inpari 32",
+            jumlah:100,
+            tanggal:"2026-08-20",
+            tujuan:"Penanaman"
+        }
+    ],
+
+    kebutuhan:[
+        {
+            id:1,
+            tanaman:"Padi",
+            varietas:"Inpari 32",
+            jumlah:300,
+            petani:"Kelompok Tani Sejahtera",
+            waktu:"2026-09-15"
+        }
+    ]
+
+};
+
+
+/* =====================================================
+   LOAD DATA
+===================================================== */
+
+function loadData(){
+
+    if(!localStorage.getItem("benihData")){
+
+        localStorage.setItem(
+            "benihData",
+            JSON.stringify(defaultData)
+        );
+
+    }
+
+    return JSON.parse(
+        localStorage.getItem("benihData")
+    );
+}
+
+
+/* =====================================================
+   SAVE DATA
+===================================================== */
+
+function saveData(data){
+
+    localStorage.setItem(
+        "benihData",
+        JSON.stringify(data)
+    );
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        const loginButton =
+            document.getElementById(
+                "loginButton"
+            );
+
+        const usernameInput =
+            document.getElementById(
+                "username"
+            );
+
+        const passwordInput =
+            document.getElementById(
+                "password"
+            );
+
+        loginButton.addEventListener(
+            "click",
+            login
+        );
+
+        passwordInput.addEventListener(
+            "keydown",
+            function(event){
+
+                if(event.key === "Enter"){
+
+                    login();
+
+                }
+
+            }
+        );
+
+        usernameInput.addEventListener(
+            "keydown",
+            function(event){
+
+                if(event.key === "Enter"){
+
+                    login();
+
+                }
+
+            }
+        );
+
+        renderAll();
+
+    }
+);
+
+
+/* =====================================================
+   FUNGSI LOGIN
+===================================================== */
+
+function login(){
+
+    const username =
+        document
+        .getElementById("username")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+        document
+        .getElementById("password")
+        .value
+        .trim();
+
+    const message =
+        document
+        .getElementById("loginMessage");
+
+
+    if(
+        username === "admin" &&
+        password === "12345"
+    ){
+
+        currentRole = "admin";
+
+        currentUsername = "admin";
+
+        localStorage.setItem(
+            "role",
+            "admin"
+        );
+
+        localStorage.setItem(
+            "username",
+            "admin"
+        );
+
+        showDashboard();
+
+        return;
+    }
+
+
+    if(
+        username === "user" &&
+        password === "12345"
+    ){
+
+        currentRole = "user";
+
+        currentUsername = "user";
+
+        localStorage.setItem(
+            "role",
+            "user"
+        );
+
+        localStorage.setItem(
+            "username",
+            "user"
+        );
+
+        showDashboard();
+
+        return;
+    }
+
+
+    message.textContent =
+        "Username atau Password salah.";
+
+}
+
+
+/* =====================================================
+   TAMPILKAN DASHBOARD
+===================================================== */
+
+function showDashboard(){
+
+    const loginPage =
+        document.getElementById(
+            "loginPage"
+        );
+
+    const dashboard =
+        document.getElementById(
+            "dashboardApp"
+        );
+
+
+    loginPage.style.display =
+        "none";
+
+    dashboard.style.display =
+        "flex";
+
+
+    document
+        .getElementById("userName")
+        .textContent =
+        currentUsername;
+
+
+    document
+        .getElementById("userRole")
+        .textContent =
+        currentRole === "admin"
+        ? "Administrator"
+        : "Pengguna";
+
+
+    setupAccess();
+
+    showToday();
+
+    renderAll();
+
+}
+
+
+/* =====================================================
+   CEK LOGIN SAAT REFRESH
+===================================================== */
+
+function checkLogin(){
+
+    const role =
+        localStorage.setItem(
+            "role"
+        );
+
+    const username =
+        localStorage.setItem(
+            "username"
+        );
+
+
+    if(
+        role === "admin" ||
+        role === "user"
+    ){
+
+        currentRole = role;
+
+        currentUsername =
+            username || role;
+
+        showDashboard();
+
+    }
+
+}
+
+
+/* =====================================================
+   HAK AKSES
+===================================================== */
+
+function setupAccess(){
+
+    const adminElements =
+        document.querySelectorAll(
+            ".admin-only"
+        );
+
+
+    adminElements.forEach(
+        element => {
+
+            if(currentRole === "admin"){
+
+                element.style.display =
+                    "";
+
+            }else{
+
+                element.style.display =
+                    "none";
+
+            }
+
+        }
+    );
+
+
+    document
+        .querySelectorAll(".admin-column")
+        .forEach(
+            element => {
+
+                element.style.display =
+                    currentRole === "admin"
+                    ? ""
+                    : "none";
+
+            }
+        );
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+function logout(){
+
+    localStorage.removeItem(
+        "role"
+    );
+
+    localStorage.removeItem(
+        "username"
+    );
+
+    currentRole = "";
+
+    currentUsername = "";
+
+    document
+        .getElementById("dashboardApp")
+        .style.display =
+        "none";
+
+    document
+        .getElementById("loginPage")
+        .style.display =
+        "flex";
+
+    document
+        .getElementById("username")
+        .value = "";
+
+    document
+        .getElementById("password")
+        .value = "";
+
+    document
+        .getElementById("loginMessage")
+        .textContent = "";
+
+}
+
+
+/* =====================================================
+   NAVIGASI
+===================================================== */
+
+function showPage(
+    pageId,
+    button
+){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            page => {
+
+                page.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const page =
+        document.getElementById(
+            pageId
+        );
+
+
+    if(page){
+
+        page.classList.add(
+            "active"
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(
+            btn => {
+
+                btn.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    if(button){
+
+        button.classList.add(
+            "active"
+        );
+
+    }
+
+
+    const titles = {
+
+        dashboard:"Dashboard",
+
+        produksi:"Data Produksi",
+
+        stok:"Data Stok",
+
+        distribusi:"Data Distribusi",
+
+        kebutuhan:"Data Kebutuhan"
+
+    };
+
+
+    document
+        .getElementById("pageTitle")
+        .textContent =
+        titles[pageId];
+
+
+    document
+        .getElementById("sidebar")
+        .classList.remove(
+            "open"
+        );
+
+}
+
+
+/* =====================================================
+   MOBILE SIDEBAR
+===================================================== */
+
+function toggleSide(){
+
+    document
+        .getElementById("sidebar")
+        .classList.toggle(
+            "open"
+        );
+
+}
+
+
+/* =====================================================
+   TANGGAL
+===================================================== */
+
+function showToday(){
+
+    document
+        .getElementById("today")
+        .textContent =
+        new Date()
+        .toLocaleDateString(
+            "id-ID",
+            {
+                weekday:"long",
+                day:"numeric",
+                month:"long",
+                year:"numeric"
+            }
+        );
+
+}
+
+
+/* =====================================================
+   RENDER SEMUA DATA
+===================================================== */
+
+function renderAll(){
+
+    const data =
+        loadData();
+
+
+    renderProduksi(
+        data.produksi
+    );
+
+    renderStok(
+        data.stok
+    );
+
+    renderDistribusi(
+        data.distribusi
+    );
+
+    renderKebutuhan(
+        data.kebutuhan
+    );
+
+    updateStatistics(
+        data
+    );
+
+    renderStockSummary(
+        data.stok
+    );
+
+    renderActivity(
+        data
+    );
+
+    setupAccess();
+
+}
+
+
+/* =====================================================
+   PRODUKSI
+===================================================== */
+
+function renderProduksi(data){
+
+    const tbody =
+        document.getElementById(
+            "tableProduksi"
+        );
+
+    const search =
+        document
+        .getElementById(
+            "searchProduksi"
+        )
+        .value
+        .toLowerCase();
+
+
+    const filtered =
+        data.filter(
+            item =>
+                item.tanaman
+                .toLowerCase()
+                .includes(search)
+                ||
+                item.varietas
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    if(filtered.length === 0){
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="8" class="empty">
+                    Tidak ada data.
+                </td>
+            </tr>`;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            item => {
+
+                const statusClass =
+                    item.status === "Selesai"
+                    ? "good"
+                    : "warn";
+
+
+                return `
+                <tr>
+
+                    <td>${item.tanaman}</td>
+
+                    <td>${item.varietas}</td>
+
+                    <td>${item.luas}</td>
+
+                    <td>${item.tanam}</td>
+
+                    <td>${item.perkiraan}</td>
+
+                    <td>${item.realisasi}</td>
+
+                    <td>
+                        <span class="badge ${statusClass}">
+                            ${item.status}
+                        </span>
+                    </td>
+
+                    <td class="admin-column">
+
+                        ${
+                            currentRole === "admin"
+                            ?
+                            `
+                            <div class="actions">
+
+                                <button
+                                    class="btn btn-edit"
+                                    onclick="editData('produksi',${item.id})"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="deleteData('produksi',${item.id})"
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
+
+                    </td>
+
+                </tr>
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   STOK
+===================================================== */
+
+function renderStok(data){
+
+    const tbody =
+        document.getElementById(
+            "tableStok"
+        );
+
+    const search =
+        document
+        .getElementById(
+            "searchStok"
+        )
+        .value
+        .toLowerCase();
+
+
+    const filtered =
+        data.filter(
+            item =>
+                item.jenis
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    if(filtered.length === 0){
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="7" class="empty">
+                    Tidak ada data.
+                </td>
+            </tr>`;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            item => {
+
+                const akhir =
+                    Number(item.jumlah)
+                    -
+                    Number(item.keluar);
+
+
+                return `
+                <tr>
+
+                    <td>${item.jenis}</td>
+
+                    <td>${item.jumlah}</td>
+
+                    <td>${item.satuan}</td>
+
+                    <td>${item.masuk}</td>
+
+                    <td>${item.keluar}</td>
+
+                    <td>
+                        <b>${akhir}</b>
+                    </td>
+
+                    <td class="admin-column">
+
+                        ${
+                            currentRole === "admin"
+                            ?
+                            `
+                            <div class="actions">
+
+                                <button
+                                    class="btn btn-edit"
+                                    onclick="editData('stok',${item.id})"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="deleteData('stok',${item.id})"
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
+
+                    </td>
+
+                </tr>
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   DISTRIBUSI
+===================================================== */
+
+function renderDistribusi(data){
+
+    const tbody =
+        document.getElementById(
+            "tableDistribusi"
+        );
+
+    const search =
+        document
+        .getElementById(
+            "searchDistribusi"
+        )
+        .value
+        .toLowerCase();
+
+
+    const filtered =
+        data.filter(
+            item =>
+                item.penerima
+                .toLowerCase()
+                .includes(search)
+                ||
+                item.jenis
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    if(filtered.length === 0){
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="7" class="empty">
+                    Tidak ada data.
+                </td>
+            </tr>`;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            item => {
+
+                return `
+                <tr>
+
+                    <td>${item.penerima}</td>
+
+                    <td>${item.lokasi}</td>
+
+                    <td>${item.jenis}</td>
+
+                    <td>${item.jumlah}</td>
+
+                    <td>${item.tanggal}</td>
+
+                    <td>${item.tujuan}</td>
+
+                    <td class="admin-column">
+
+                        ${
+                            currentRole === "admin"
+                            ?
+                            `
+                            <div class="actions">
+
+                                <button
+                                    class="btn btn-edit"
+                                    onclick="editData('distribusi',${item.id})"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="deleteData('distribusi',${item.id})"
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
+
+                    </td>
+
+                </tr>
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   KEBUTUHAN
+===================================================== */
+
+function renderKebutuhan(data){
+
+    const tbody =
+        document.getElementById(
+            "tableKebutuhan"
+        );
+
+    const search =
+        document
+        .getElementById(
+            "searchKebutuhan"
+        )
+        .value
+        .toLowerCase();
+
+
+    const filtered =
+        data.filter(
+            item =>
+                item.tanaman
+                .toLowerCase()
+                .includes(search)
+                ||
+                item.petani
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    if(filtered.length === 0){
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="6" class="empty">
+                    Tidak ada data.
+                </td>
+            </tr>`;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            item => {
+
+                return `
+                <tr>
+
+                    <td>${item.tanaman}</td>
+
+                    <td>${item.varietas}</td>
+
+                    <td>${item.jumlah}</td>
+
+                    <td>${item.petani}</td>
+
+                    <td>${item.waktu}</td>
+
+                    <td class="admin-column">
+
+                        ${
+                            currentRole === "admin"
+                            ?
+                            `
+                            <div class="actions">
+
+                                <button
+                                    class="btn btn-edit"
+                                    onclick="editData('kebutuhan',${item.id})"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="deleteData('kebutuhan',${item.id})"
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
+
+                    </td>
+
+                </tr>
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   STATISTIK
+===================================================== */
+
+function updateStatistics(data){
+
+    document.getElementById(
+        "sProduksi"
+    ).textContent =
+        data.produksi.length;
+
+
+    document.getElementById(
+        "sStok"
+    ).textContent =
+        data.stok.reduce(
+            (total,item) =>
+                total +
+                (
+                    Number(item.jumlah)
+                    -
+                    Number(item.keluar)
+                ),
+            0
+        );
+
+
+    document.getElementById(
+        "sDistribusi"
+    ).textContent =
+        data.distribusi.length;
+
+
+    document.getElementById(
+        "sKebutuhan"
+    ).textContent =
+        data.kebutuhan.length;
+
+}
+
+
+/* =====================================================
+   RINGKASAN STOK
+===================================================== */
+
+function renderStockSummary(data){
+
+    const element =
+        document.getElementById(
+            "stockSummary"
+        );
+
+
+    if(data.length === 0){
+
+        element.innerHTML =
+            `<div class="empty">
+                Belum ada data stok.
+            </div>`;
+
+        return;
+
+    }
+
+
+    const max =
+        Math.max(
+            ...data.map(
+                item =>
+                    Number(item.jumlah)
+                    -
+                    Number(item.keluar)
+            ),
+            1
+        );
+
+
+    element.innerHTML =
+        data.map(
+            item => {
+
+                const stok =
+                    Number(item.jumlah)
+                    -
+                    Number(item.keluar);
+
+                const persen =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            stok / max * 100
+                        )
+                    );
+
+
+                return `
+                <div class="stock-item">
+
+                    <div class="stock-header">
+
+                        <span>
+                            ${item.jenis}
+                        </span>
+
+                        <b>
+                            ${stok} ${item.satuan}
+                        </b>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <i
+                            style="width:${persen}%"
+                        ></i>
+
+                    </div>
+
+                </div>
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   AKTIVITAS
+===================================================== */
+
+function renderActivity(data){
+
+    const element =
+        document.getElementById(
+            "activity"
+        );
+
+
+    const aktivitas = [];
+
+
+    data.produksi
+        .slice(-3)
+        .forEach(
+            item => {
+
+                aktivitas.push(
+                    `🌾 Produksi ${item.tanaman}`
+                );
+
+            }
+        );
+
+
+    data.distribusi
+        .slice(-3)
+        .forEach(
+            item => {
+
+                aktivitas.push(
+                    `🚚 Distribusi kepada ${item.penerima}`
+                );
+
+            }
+        );
+
+
+    if(aktivitas.length === 0){
+
+        element.innerHTML =
+            `<div class="empty">
+                Belum ada aktivitas.
+            </div>`;
+
+        return;
+
+    }
+
+
+    element.innerHTML =
+        aktivitas
+        .slice(-5)
+        .reverse()
+        .map(
+            item =>
+                `
+                <div
+                    style="
+                    padding:12px 0;
+                    border-bottom:1px solid #edf1ef;
+                    font-size:13px;
+                    "
+                >
+                    ${item}
+                </div>
+                `
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   OPEN MODAL
+===================================================== */
+
+function openModal(
+    type,
+    id = null
+){
+
+    if(currentRole !== "admin"){
+
+        alert(
+            "Hanya Admin yang dapat mengubah data."
+        );
+
+        return;
+
+    }
+
+
+    currentType = type;
+
+    editingId = id;
+
+
+    const modal =
+        document.getElementById(
+            "modal"
+        );
+
+    const title =
+        document.getElementById(
+            "modalTitle"
+        );
+
+    const fields =
+        document.getElementById(
+            "formFields"
+        );
+
+
+    title.textContent =
+        id
+        ? "Edit Data"
+        : "Tambah Data";
+
+
+    let html = "";
+
+
+    if(type === "produksi"){
+
+        html = `
+
+        <div class="field">
+            <label>Tanaman</label>
+            <input
+                name="tanaman"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Varietas</label>
+            <input
+                name="varietas"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Luas (Ha)</label>
+            <input
+                name="luas"
+                type="number"
+                step="0.01"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Tanggal Tanam</label>
+            <input
+                name="tanam"
+                type="date"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Perkiraan Produksi</label>
+            <input
+                name="perkiraan"
+                type="number"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Realisasi</label>
+            <input
+                name="realisasi"
+                type="number"
+                required
+            >
+        </div>
+
+        <div class="field full">
+            <label>Status</label>
+
+            <select name="status">
+
+                <option value="Berjalan">
+                    Berjalan
+                </option>
+
+                <option value="Selesai">
+                    Selesai
+                </option>
+
+            </select>
+
+        </div>
+
+        `;
+
+    }
+
+
+    if(type === "stok"){
+
+        html = `
+
+        <div class="field full">
+            <label>Jenis / Varietas</label>
+            <input
+                name="jenis"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Jumlah Masuk</label>
+            <input
+                name="jumlah"
+                type="number"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Satuan</label>
+            <input
+                name="satuan"
+                placeholder="Kg / Unit / Karung"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Tanggal Masuk</label>
+            <input
+                name="masuk"
+                type="date"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Jumlah Keluar</label>
+            <input
+                name="keluar"
+                type="number"
+                value="0"
+                min="0"
+                required
+            >
+        </div>
+
+        `;
+
+    }
+
+
+    if(type === "distribusi"){
+
+        html = `
+
+        <div class="field">
+            <label>Penerima</label>
+            <input
+                name="penerima"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Desa / Kecamatan</label>
+            <input
+                name="lokasi"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Jenis Benih</label>
+            <input
+                name="jenis"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Jumlah</label>
+            <input
+                name="jumlah"
+                type="number"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Tanggal</label>
+            <input
+                name="tanggal"
+                type="date"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Tujuan</label>
+            <input
+                name="tujuan"
+                placeholder="Penanaman"
+                required
+            >
+        </div>
+
+        `;
+
+    }
+
+
+    if(type === "kebutuhan"){
+
+        html = `
+
+        <div class="field">
+            <label>Tanaman</label>
+            <input
+                name="tanaman"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Varietas</label>
+            <input
+                name="varietas"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Jumlah</label>
+            <input
+                name="jumlah"
+                type="number"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Kelompok / Petani</label>
+            <input
+                name="petani"
+                required
+            >
+        </div>
+
+        <div class="field full">
+            <label>Waktu Kebutuhan</label>
+            <input
+                name="waktu"
+                type="date"
+                required
+            >
+        </div>
+
+        `;
+
+    }
+
+
+    fields.innerHTML = html;
+
+
+    /* ISI DATA SAAT EDIT */
+
+    if(id){
+
+        const data =
+            loadData()[type];
+
+        const item =
+            data.find(
+                item =>
+                    item.id === id
+            );
+
+
+        if(item){
+
+            Object.keys(item)
+                .forEach(
+                    key => {
+
+                        const input =
+                            document.querySelector(
+                                `[name="${key}"]`
+                            );
+
+                        if(input){
+
+                            input.value =
+                                item[key];
+
+                        }
+
+                    }
+                );
+
+        }
+
+    }
+
+
+    modal.classList.add(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   CLOSE MODAL
+===================================================== */
+
+function closeModal(){
+
+    document
+        .getElementById("modal")
+        .classList.remove(
+            "show"
+        );
+
+    document
+        .getElementById("dataForm")
+        .reset();
+
+    editingId = null;
+
+}
+
+
+/* =====================================================
+   SUBMIT FORM
+===================================================== */
+
+document
+    .getElementById("dataForm")
+    .addEventListener(
+        "submit",
+        function(event){
+
+            event.preventDefault();
+
+
+            if(currentRole !== "admin"){
+
+                return;
+
+            }
+
+
+            const data =
+                loadData();
+
+
+            const formData =
+                new FormData(
+                    this
+                );
+
+
+            const object = {};
+
+
+            formData.forEach(
+                (value,key) => {
+
+                    object[key] =
+                        value;
+
+                }
+            );
+
+
+            if(
+                currentType === "stok" ||
+                currentType === "distribusi" ||
+                currentType === "kebutuhan"
+            ){
+
+                if(object.jumlah){
+
+                    object.jumlah =
+                        Number(
+                            object.jumlah
+                        );
+
+                }
+
+            }
+
+
+            if(
+                currentType === "stok"
+            ){
+
+                object.keluar =
+                    Number(
+                        object.keluar || 0
+                    );
+
+            }
+
+
+            if(editingId){
+
+                object.id =
+                    editingId;
+
+
+                const index =
+                    data[currentType]
+                    .findIndex(
+                        item =>
+                            item.id === editingId
+                    );
+
+
+                if(index !== -1){
+
+                    data[currentType][index] =
+                        object;
+
+                }
+
+            }else{
+
+                object.id =
+                    Date.now();
+
+                data[currentType]
+                    .push(object);
+
+            }
+
+
+            saveData(data);
+
+            closeModal();
+
+            renderAll();
+
+            alert(
+                "Data berhasil disimpan."
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   EDIT
+===================================================== */
+
+function editData(
+    type,
+    id
+){
+
+    if(currentRole !== "admin"){
+
+        alert(
+            "Hanya Admin yang dapat mengedit data."
+        );
+
+        return;
+
+    }
+
+
+    openModal(
+        type,
+        id
+    );
+
+}
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+function deleteData(
+    type,
+    id
+){
+
+    if(currentRole !== "admin"){
+
+        alert(
+            "Hanya Admin yang dapat menghapus data."
+        );
+
+        return;
+
+    }
+
+
+    const yakin =
+        confirm(
+            "Apakah Anda yakin ingin menghapus data ini?"
+        );
+
+
+    if(!yakin){
+
+        return;
+
+    }
+
+
+    const data =
+        loadData();
+
+
+    data[type] =
+        data[type].filter(
+            item =>
+                item.id !== id
+        );
+
+
+    saveData(data);
+
+    renderAll();
+
+
+    alert(
+        "Data berhasil dihapus."
+    );
+
+}
+
+
+/* =====================================================
+   MULAI APLIKASI
+===================================================== */
+
+checkLogin();
+
+</script>
+
+</body>
+</html>
