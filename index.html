@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SI-BENIH GABE | Sistem Informasi Data Perbenihan</title>
+<title>SI-BENIH GABE | Firebase Login & Data Perbenihan</title>
 
 <style>
 
@@ -786,7 +786,23 @@ th{
     background:
         rgba(255,255,255,.18);
 }
+.wa-admin-btn{
+    margin-top:10px;
+    width:100%;
+    padding:10px;
+    border:none;
+    background:#02fb5d;
+    color:white;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+}
 
+.wa-admin-btn:hover{
+    background:#02fb5d;
+    transform:translateY(-1px);
+}
 
 /* =====================================================
    TOOLBAR
@@ -1212,6 +1228,12 @@ th{
 
 }
 
+
+.auth-title{color:#fff;font-size:17px;font-weight:800;margin:2px 0 14px}
+.auth-link-btn,.forgot-btn{width:100%;border:0;background:transparent;color:#d9eee7;cursor:pointer;margin-top:12px;font-size:12px}
+.auth-link-btn:hover,.forgot-btn:hover{color:#fff;text-decoration:underline}
+#registerMessage{min-height:20px;margin-top:13px;color:#ffe0e0;font-size:13px}
+
 </style>
 </head>
 
@@ -1221,48 +1243,41 @@ th{
      LOGIN
 ===================================================== -->
 
+
 <div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">🌱</div>
+    <h1>SI-BENIH GABE</h1>
+    <p class="subtitle">Sistem Informasi Data Perbenihan</p>
 
-    <div class="login-box">
-
-        <div class="login-logo">
-            🌱
-        </div>
-
-        <h1>SI-BENIH GABE</h1>
-
-        <p class="subtitle">
-            Sistem Informasi Data Perbenihan
-        </p>
-
-        <input
-            type="text"
-            id="username"
-            placeholder="Username"
-            autocomplete="username"
-        >
-
-        <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            autocomplete="current-password"
-        >
-
-        <button
-            type="button"
-            id="loginButton"
-        >
-            Masuk
-        </button>
-
-        <p id="loginMessage"></p>
-
+    <div id="loginForm">
+      <div class="auth-title">Masuk ke Sistem</div>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+      <button type="button" id="loginButton">🔐 Masuk</button>
+      <button type="button" class="auth-link-btn" id="showRegisterButton">Belum punya akun? <b>Daftar</b></button>
+      <button type="button" class="forgot-btn" id="forgotPasswordButton">Lupa password?</button>
+      <p id="loginMessage"></p>
     </div>
 
+    <div id="registerForm" style="display:none;">
+      <div class="auth-title">Daftar Akun Baru</div>
+      <input type="text" id="registerName" placeholder="Nama lengkap" autocomplete="name">
+      <input type="text" id="registerUsername" placeholder="Username" autocomplete="username">
+      <input type="email" id="registerEmail" placeholder="Email" autocomplete="email">
+      <input type="password" id="registerPassword" placeholder="Password minimal 6 karakter" autocomplete="new-password">
+      <input type="password" id="registerPassword2" placeholder="Ulangi password" autocomplete="new-password">
+      <button type="button" id="registerButton">📝 Daftar Akun</button>
+      <button type="button" class="auth-link-btn" id="showLoginButton">Sudah punya akun? <b>Masuk</b></button>
+      <p id="registerMessage"></p>
+    </div>
+
+    <div class="login-info">
+      Akun baru otomatis menjadi <b>User/Pengguna</b>.<br>
+      Hak <b>Admin</b> diberikan melalui Firebase Firestore oleh pengelola sistem.
+    </div>
+  </div>
 </div>
-
-
 
 <!-- =====================================================
      DASHBOARD APP
@@ -1342,11 +1357,20 @@ th{
             Sistem Informasi Data Perbenihan<br>
             Hutaraja
 
+            <!-- KONTAK ADMIN WHATSAPP -->
             <button
-                class="logout-btn"
-                onclick="logout()"
-            >
-                🚪 Keluar
+            class="wa-admin-btn"
+            onclick="contactAdmin()"
+>
+            💬 Hubungi Admin
+            </button>
+
+<!-- LOGOUT -->
+            <button
+            class="logout-btn"
+            onclick="logout()"
+>
+            🚪 Keluar
             </button>
 
         </div>
@@ -1963,1827 +1987,308 @@ th{
 
 
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signOut, sendPasswordResetEmail, updateProfile
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, getDoc, doc, setDoc,
+  addDoc, updateDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 /* =====================================================
-   DATA
+   FIREBASE CONFIG
+   GANTI DENGAN CONFIG DARI FIREBASE CONSOLE
 ===================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDYJg0xyyeKkSe0rVFFff65tRQOBLJIZ-Y",
+  authDomain: "si-benih-gabe-bffb0.firebaseapp.com",
+  projectId: "si-benih-gabe-bffb0",
+  storageBucket: "si-benih-gabe-bffb0.firebasestorage.app",
+  messagingSenderId: "137680038129",
+  appId: "1:137680038129:web:8c2e5dda820ddfc7706150",
+  measurementId: "G-2776BD1ZBR"
+};
+const firebaseConfigured = !firebaseConfig.apiKey.startsWith("GANTI_") &&
+                           !firebaseConfig.projectId.startsWith("GANTI_");
+
+let auth = null;
+let db = null;
+if(firebaseConfigured){
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
 
 let currentRole = "";
 let currentUsername = "";
-
+let currentUid = "";
 let currentType = "";
 let editingId = null;
 
-
-/* =====================================================
-   DATA AWAL
-===================================================== */
+const cloudData = {produksi:[],stok:[],distribusi:[],kebutuhan:[]};
+const collectionNames = {produksi:"produksi",stok:"stok",distribusi:"distribusi",kebutuhan:"kebutuhan"};
+const titles = {dashboard:"Dashboard",produksi:"Data Produksi",stok:"Data Stok",distribusi:"Data Distribusi",kebutuhan:"Data Kebutuhan"};
 
 const defaultData = {
-
-    produksi:[
-        {
-            id:1,
-            tanaman:"Padi",
-            varietas:"Inpari 32",
-            luas:"2",
-            tanam:"2026-08-01",
-            perkiraan:"500",
-            realisasi:"450",
-            status:"Selesai"
-        },
-        {
-            id:2,
-            tanaman:"Jagung",
-            varietas:"Bisi 18",
-            luas:"3",
-            tanam:"2026-08-10",
-            perkiraan:"700",
-            realisasi:"500",
-            status:"Berjalan"
-        }
-    ],
-
-    stok:[
-        {
-            id:1,
-            jenis:"Benih Padi Inpari 32",
-            jumlah:1000,
-            satuan:"Kg",
-            masuk:"2026-08-01",
-            keluar:250
-        },
-        {
-            id:2,
-            jenis:"Benih Jagung Bisi 18",
-            jumlah:800,
-            satuan:"Kg",
-            masuk:"2026-08-10",
-            keluar:100
-        }
-    ],
-
-    distribusi:[
-        {
-            id:1,
-            penerima:"Kelompok Tani Makmur",
-            lokasi:"Hutaraja",
-            jenis:"Padi Inpari 32",
-            jumlah:100,
-            tanggal:"2026-08-20",
-            tujuan:"Penanaman"
-        }
-    ],
-
-    kebutuhan:[
-        {
-            id:1,
-            tanaman:"Padi",
-            varietas:"Inpari 32",
-            jumlah:300,
-            petani:"Kelompok Tani Sejahtera",
-            waktu:"2026-09-15"
-        }
-    ]
-
+  produksi:[
+    {tanaman:"Padi",varietas:"Inpari 32",luas:"2",tanam:"2026-08-01",perkiraan:"500",realisasi:"450",status:"Selesai"},
+    {tanaman:"Jagung",varietas:"Bisi 18",luas:"3",tanam:"2026-08-10",perkiraan:"700",realisasi:"500",status:"Berjalan"}
+  ],
+  stok:[
+    {jenis:"Benih Padi Inpari 32",jumlah:1000,satuan:"Kg",masuk:"2026-08-01",keluar:250},
+    {jenis:"Benih Jagung Bisi 18",jumlah:800,satuan:"Kg",masuk:"2026-08-10",keluar:100}
+  ],
+  distribusi:[
+    {penerima:"Kelompok Tani Makmur",lokasi:"Hutaraja",jenis:"Padi Inpari 32",jumlah:100,tanggal:"2026-08-20",tujuan:"Penanaman"}
+  ],
+  kebutuhan:[
+    {tanaman:"Padi",varietas:"Inpari 32",jumlah:300,petani:"Kelompok Tani Sejahtera",waktu:"2026-09-15"}
+  ]
 };
 
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
-/* =====================================================
-   LOAD DATA
-===================================================== */
-
-function loadData(){
-
-    if(!localStorage.getItem("benihData")){
-
-        localStorage.setItem(
-            "benihData",
-            JSON.stringify(defaultData)
-        );
-
-    }
-
-    return JSON.parse(
-        localStorage.getItem("benihData")
-    );
+function showLoginMessage(text,type="error"){
+  $("loginMessage").textContent=text;
+  $("loginMessage").style.color=type==="success"?"#c9ffe5":"#ffd2d2";
+}
+function showRegisterMessage(text,type="error"){
+  $("registerMessage").textContent=text;
+  $("registerMessage").style.color=type==="success"?"#c9ffe5":"#ffd2d2";
+}
+function ensureFirebase(){
+  if(!firebaseConfigured){
+    showLoginMessage("Firebase belum dikonfigurasi. Isi firebaseConfig terlebih dahulu.");
+    return false;
+  }
+  return true;
+}
+function friendlyError(error){
+  const m={
+    "auth/invalid-credential":"Email atau password salah.",
+    "auth/invalid-email":"Format email tidak valid.",
+    "auth/email-already-in-use":"Email tersebut sudah terdaftar.",
+    "auth/weak-password":"Password minimal 6 karakter.",
+    "auth/too-many-requests":"Terlalu banyak percobaan. Coba lagi nanti.",
+    "auth/network-request-failed":"Koneksi internet bermasalah.",
+    "auth/operation-not-allowed":"Login Email/Password belum diaktifkan di Firebase."
+  };
+  return m[error?.code] || error?.message || "Terjadi kesalahan.";
 }
 
-
-/* =====================================================
-   SAVE DATA
-===================================================== */
-
-function saveData(data){
-
-    localStorage.setItem(
-        "benihData",
-        JSON.stringify(data)
-    );
-
+function showRegister(){
+  $("loginForm").style.display="none"; $("registerForm").style.display="block";
+  showLoginMessage(""); showRegisterMessage("");
+}
+function showLogin(){
+  $("registerForm").style.display="none"; $("loginForm").style.display="block";
+  showLoginMessage(""); showRegisterMessage("");
 }
 
+async function registerAccount(){
+  if(!ensureFirebase()) return;
+  const name=$("registerName").value.trim();
+  const username=$("registerUsername").value.trim().toLowerCase();
+  const email=$("registerEmail").value.trim().toLowerCase();
+  const password=$("registerPassword").value;
+  const password2=$("registerPassword2").value;
 
-/* =====================================================
-   LOGIN
-===================================================== */
+  if(!name||!username||!email||!password||!password2) return showRegisterMessage("Semua field wajib diisi.");
+  if(!/^[a-z0-9._-]{3,30}$/.test(username)) return showRegisterMessage("Username 3-30 karakter dan hanya huruf kecil, angka, titik, _ atau -.");
+  if(password.length<6) return showRegisterMessage("Password minimal 6 karakter.");
+  if(password!==password2) return showRegisterMessage("Konfirmasi password tidak sama.");
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        const loginButton =
-            document.getElementById(
-                "loginButton"
-            );
-
-        const usernameInput =
-            document.getElementById(
-                "username"
-            );
-
-        const passwordInput =
-            document.getElementById(
-                "password"
-            );
-
-        loginButton.addEventListener(
-            "click",
-            login
-        );
-
-        passwordInput.addEventListener(
-            "keydown",
-            function(event){
-
-                if(event.key === "Enter"){
-
-                    login();
-
-                }
-
-            }
-        );
-
-        usernameInput.addEventListener(
-            "keydown",
-            function(event){
-
-                if(event.key === "Enter"){
-
-                    login();
-
-                }
-
-            }
-        );
-
-        renderAll();
-
-    }
-);
-
-
-/* =====================================================
-   FUNGSI LOGIN
-===================================================== */
-
-function login(){
-
-    const username =
-        document
-        .getElementById("username")
-        .value
-        .trim()
-        .toLowerCase();
-
-    const password =
-        document
-        .getElementById("password")
-        .value
-        .trim();
-
-    const message =
-        document
-        .getElementById("loginMessage");
-
-
-    if(
-        username === "admin" &&
-        password === "12345"
-    ){
-
-        currentRole = "admin";
-
-        currentUsername = "admin";
-
-        localStorage.setItem(
-            "role",
-            "admin"
-        );
-
-        localStorage.setItem(
-            "username",
-            "admin"
-        );
-
-        showDashboard();
-
-        return;
-    }
-
-
-    if(
-        username === "user" &&
-        password === "12345"
-    ){
-
-        currentRole = "user";
-
-        currentUsername = "user";
-
-        localStorage.setItem(
-            "role",
-            "user"
-        );
-
-        localStorage.setItem(
-            "username",
-            "user"
-        );
-
-        showDashboard();
-
-        return;
-    }
-
-
-    message.textContent =
-        "Username atau Password salah.";
-
+  const btn=$("registerButton"); btn.disabled=true; btn.textContent="Mendaftarkan...";
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,password);
+    await updateProfile(cred.user,{displayName:name});
+    await setDoc(doc(db,"users",cred.user.uid),{
+      uid:cred.user.uid,nama:name,username,email,role:"user",createdAt:new Date().toISOString()
+    });
+    showRegisterMessage("Akun berhasil dibuat. Membuka dashboard...","success");
+  }catch(e){console.error(e);showRegisterMessage(friendlyError(e));}
+  finally{btn.disabled=false;btn.textContent="📝 Daftar Akun";}
 }
 
+async function login(){
+  if(!ensureFirebase()) return;
+  const email=$("loginEmail").value.trim().toLowerCase();
+  const password=$("loginPassword").value;
+  if(!email||!password) return showLoginMessage("Email dan password wajib diisi.");
 
-/* =====================================================
-   TAMPILKAN DASHBOARD
-===================================================== */
+  const btn=$("loginButton"); btn.disabled=true; btn.textContent="Memeriksa...";
+  try{await signInWithEmailAndPassword(auth,email,password);showLoginMessage("Login berhasil.","success");}
+  catch(e){console.error(e);showLoginMessage(friendlyError(e));}
+  finally{btn.disabled=false;btn.textContent="🔐 Masuk";}
+}
 
-function showDashboard(){
+async function resetPassword(){
+  if(!ensureFirebase()) return;
+  const email=$("loginEmail").value.trim().toLowerCase();
+  if(!email) return showLoginMessage("Masukkan email terlebih dahulu.");
+  try{await sendPasswordResetEmail(auth,email);showLoginMessage("Link reset password dikirim ke email.","success");}
+  catch(e){console.error(e);showLoginMessage(friendlyError(e));}
+}
 
-    const loginPage =
-        document.getElementById(
-            "loginPage"
-        );
+async function getUserProfile(uid){
+  const snap=await getDoc(doc(db,"users",uid));
+  return snap.exists()?snap.data():{nama:auth.currentUser?.displayName||"Pengguna",username:auth.currentUser?.email?.split("@")[0]||"user",role:"user"};
+}
 
-    const dashboard =
-        document.getElementById(
-            "dashboardApp"
-        );
+async function enterDashboard(user){
+  const profile=await getUserProfile(user.uid);
+  currentUid=user.uid;
+  currentRole=profile.role==="admin"?"admin":"user";
+  currentUsername=profile.username||profile.nama||user.email;
+  $("userName").textContent=currentUsername;
+  $("userRole").textContent=currentRole==="admin"?"Administrator":"Pengguna";
+  $("loginPage").style.display="none";
+  $("dashboardApp").style.display="flex";
+  setupAccess(); showToday(); await loadCloudData();
+}
 
+onAuthStateChanged(auth,async user=>{
+  if(user) await enterDashboard(user);
+  else {$("dashboardApp").style.display="none";$("loginPage").style.display="flex";}
+});
 
-    loginPage.style.display =
-        "none";
-
-    dashboard.style.display =
-        "flex";
-
-
-    document
-        .getElementById("userName")
-        .textContent =
-        currentUsername;
-
-
-    document
-        .getElementById("userRole")
-        .textContent =
-        currentRole === "admin"
-        ? "Administrator"
-        : "Pengguna";
-
-
-    setupAccess();
-
-    showToday();
-
+async function seedCollection(type){
+  const ref=collection(db,collectionNames[type]);
+  const snap=await getDocs(ref);
+  if(snap.empty){
+    await Promise.all(defaultData[type].map(item=>addDoc(ref,{...item,createdAt:new Date().toISOString(),createdBy:currentUid})));
+  }
+}
+async function loadCollection(type){
+  const snap=await getDocs(collection(db,collectionNames[type]));
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+async function loadCloudData(){
+  try{
+    for(const type of Object.keys(collectionNames)) await seedCollection(type);
+    for(const type of Object.keys(collectionNames)) cloudData[type]=await loadCollection(type);
     renderAll();
-
+  }catch(e){console.error(e);alert("Data Firebase gagal dimuat. Periksa Firestore Rules.");}
 }
-
-
-/* =====================================================
-   CEK LOGIN SAAT REFRESH
-===================================================== */
-
-function checkLogin(){
-
-    const role =
-        localStorage.setItem(
-            "role"
-        );
-
-    const username =
-        localStorage.setItem(
-            "username"
-        );
-
-
-    if(
-        role === "admin" ||
-        role === "user"
-    ){
-
-        currentRole = role;
-
-        currentUsername =
-            username || role;
-
-        showDashboard();
-
-    }
-
+async function saveCloudData(type,obj){
+  if(editingId) await updateDoc(doc(db,collectionNames[type],editingId),{...obj,updatedAt:new Date().toISOString(),updatedBy:currentUid});
+  else await addDoc(collection(db,collectionNames[type]),{...obj,createdAt:new Date().toISOString(),createdBy:currentUid});
 }
-
-
-/* =====================================================
-   HAK AKSES
-===================================================== */
+async function deleteCloudData(type,id){await deleteDoc(doc(db,collectionNames[type],id));}
 
 function setupAccess(){
-
-    const adminElements =
-        document.querySelectorAll(
-            ".admin-only"
-        );
-
-
-    adminElements.forEach(
-        element => {
-
-            if(currentRole === "admin"){
-
-                element.style.display =
-                    "";
-
-            }else{
-
-                element.style.display =
-                    "none";
-
-            }
-
-        }
-    );
-
-
-    document
-        .querySelectorAll(".admin-column")
-        .forEach(
-            element => {
-
-                element.style.display =
-                    currentRole === "admin"
-                    ? ""
-                    : "none";
-
-            }
-        );
-
+  document.querySelectorAll(".admin-only").forEach(el=>el.style.display=currentRole==="admin"?"":"none");
+  document.querySelectorAll(".admin-column").forEach(el=>el.style.display=currentRole==="admin"?"":"none");
 }
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-function logout(){
-
-    localStorage.removeItem(
-        "role"
-    );
-
-    localStorage.removeItem(
-        "username"
-    );
-
-    currentRole = "";
-
-    currentUsername = "";
-
-    document
-        .getElementById("dashboardApp")
-        .style.display =
-        "none";
-
-    document
-        .getElementById("loginPage")
-        .style.display =
-        "flex";
-
-    document
-        .getElementById("username")
-        .value = "";
-
-    document
-        .getElementById("password")
-        .value = "";
-
-    document
-        .getElementById("loginMessage")
-        .textContent = "";
-
+async function logout(){if(auth) await signOut(auth);showLogin();$("loginEmail").value="";$("loginPassword").value="";}
+function showPage(pageId,button){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  $(pageId)?.classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  button?.classList.add("active");
+  $("pageTitle").textContent=titles[pageId]||"Dashboard";
+  $("sidebar").classList.remove("open");
 }
-
-
-/* =====================================================
-   NAVIGASI
-===================================================== */
-
-function showPage(
-    pageId,
-    button
-){
-
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            page => {
-
-                page.classList.remove(
-                    "active"
-                );
-
-            }
-        );
-
-
-    const page =
-        document.getElementById(
-            pageId
-        );
-
-
-    if(page){
-
-        page.classList.add(
-            "active"
-        );
-
-    }
-
-
-    document
-        .querySelectorAll(".nav button")
-        .forEach(
-            btn => {
-
-                btn.classList.remove(
-                    "active"
-                );
-
-            }
-        );
-
-
-    if(button){
-
-        button.classList.add(
-            "active"
-        );
-
-    }
-
-
-    const titles = {
-
-        dashboard:"Dashboard",
-
-        produksi:"Data Produksi",
-
-        stok:"Data Stok",
-
-        distribusi:"Data Distribusi",
-
-        kebutuhan:"Data Kebutuhan"
-
-    };
-
-
-    document
-        .getElementById("pageTitle")
-        .textContent =
-        titles[pageId];
-
-
-    document
-        .getElementById("sidebar")
-        .classList.remove(
-            "open"
-        );
-
-}
-
-
-/* =====================================================
-   MOBILE SIDEBAR
-===================================================== */
-
-function toggleSide(){
-
-    document
-        .getElementById("sidebar")
-        .classList.toggle(
-            "open"
-        );
-
-}
-
-
-/* =====================================================
-   TANGGAL
-===================================================== */
-
-function showToday(){
-
-    document
-        .getElementById("today")
-        .textContent =
-        new Date()
-        .toLocaleDateString(
-            "id-ID",
-            {
-                weekday:"long",
-                day:"numeric",
-                month:"long",
-                year:"numeric"
-            }
-        );
-
-}
-
-
-/* =====================================================
-   RENDER SEMUA DATA
-===================================================== */
+function toggleSide(){$("sidebar").classList.toggle("open");}
+function showToday(){$("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});}
 
 function renderAll(){
-
-    const data =
-        loadData();
-
-
-    renderProduksi(
-        data.produksi
-    );
-
-    renderStok(
-        data.stok
-    );
-
-    renderDistribusi(
-        data.distribusi
-    );
-
-    renderKebutuhan(
-        data.kebutuhan
-    );
-
-    updateStatistics(
-        data
-    );
-
-    renderStockSummary(
-        data.stok
-    );
-
-    renderActivity(
-        data
-    );
-
-    setupAccess();
-
+  renderProduksi(cloudData.produksi);renderStok(cloudData.stok);renderDistribusi(cloudData.distribusi);renderKebutuhan(cloudData.kebutuhan);
+  updateStatistics(cloudData);renderStockSummary(cloudData.stok);renderActivity(cloudData);setupAccess();
 }
-
-
-/* =====================================================
-   PRODUKSI
-===================================================== */
-
 function renderProduksi(data){
-
-    const tbody =
-        document.getElementById(
-            "tableProduksi"
-        );
-
-    const search =
-        document
-        .getElementById(
-            "searchProduksi"
-        )
-        .value
-        .toLowerCase();
-
-
-    const filtered =
-        data.filter(
-            item =>
-                item.tanaman
-                .toLowerCase()
-                .includes(search)
-                ||
-                item.varietas
-                .toLowerCase()
-                .includes(search)
-        );
-
-
-    if(filtered.length === 0){
-
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="8" class="empty">
-                    Tidak ada data.
-                </td>
-            </tr>`;
-
-        return;
-
-    }
-
-
-    tbody.innerHTML =
-        filtered.map(
-            item => {
-
-                const statusClass =
-                    item.status === "Selesai"
-                    ? "good"
-                    : "warn";
-
-
-                return `
-                <tr>
-
-                    <td>${item.tanaman}</td>
-
-                    <td>${item.varietas}</td>
-
-                    <td>${item.luas}</td>
-
-                    <td>${item.tanam}</td>
-
-                    <td>${item.perkiraan}</td>
-
-                    <td>${item.realisasi}</td>
-
-                    <td>
-                        <span class="badge ${statusClass}">
-                            ${item.status}
-                        </span>
-                    </td>
-
-                    <td class="admin-column">
-
-                        ${
-                            currentRole === "admin"
-                            ?
-                            `
-                            <div class="actions">
-
-                                <button
-                                    class="btn btn-edit"
-                                    onclick="editData('produksi',${item.id})"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    class="btn btn-danger"
-                                    onclick="deleteData('produksi',${item.id})"
-                                >
-                                    Hapus
-                                </button>
-
-                            </div>
-                            `
-                            :
-                            ""
-                        }
-
-                    </td>
-
-                </tr>
-                `;
-
-            }
-        )
-        .join("");
-
+  const s=$("searchProduksi").value.toLowerCase(), tbody=$("tableProduksi");
+  const f=data.filter(x=>String(x.tanaman).toLowerCase().includes(s)||String(x.varietas).toLowerCase().includes(s));
+  if(!f.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Tidak ada data.</td></tr>';return;}
+  tbody.innerHTML=f.map(x=>`<tr><td>${esc(x.tanaman)}</td><td>${esc(x.varietas)}</td><td>${esc(x.luas)}</td><td>${esc(x.tanam)}</td><td>${esc(x.perkiraan)}</td><td>${esc(x.realisasi)}</td><td><span class="badge ${x.status==="Selesai"?"good":"warn"}">${esc(x.status)}</span></td><td class="admin-column">${currentRole==="admin"?`<div class="actions"><button class="btn btn-edit" onclick="editData('produksi','${x.id}')">Edit</button><button class="btn btn-danger" onclick="deleteData('produksi','${x.id}')">Hapus</button></div>`:""}</td></tr>`).join("");
 }
-
-
-/* =====================================================
-   STOK
-===================================================== */
-
 function renderStok(data){
-
-    const tbody =
-        document.getElementById(
-            "tableStok"
-        );
-
-    const search =
-        document
-        .getElementById(
-            "searchStok"
-        )
-        .value
-        .toLowerCase();
-
-
-    const filtered =
-        data.filter(
-            item =>
-                item.jenis
-                .toLowerCase()
-                .includes(search)
-        );
-
-
-    if(filtered.length === 0){
-
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="7" class="empty">
-                    Tidak ada data.
-                </td>
-            </tr>`;
-
-        return;
-
-    }
-
-
-    tbody.innerHTML =
-        filtered.map(
-            item => {
-
-                const akhir =
-                    Number(item.jumlah)
-                    -
-                    Number(item.keluar);
-
-
-                return `
-                <tr>
-
-                    <td>${item.jenis}</td>
-
-                    <td>${item.jumlah}</td>
-
-                    <td>${item.satuan}</td>
-
-                    <td>${item.masuk}</td>
-
-                    <td>${item.keluar}</td>
-
-                    <td>
-                        <b>${akhir}</b>
-                    </td>
-
-                    <td class="admin-column">
-
-                        ${
-                            currentRole === "admin"
-                            ?
-                            `
-                            <div class="actions">
-
-                                <button
-                                    class="btn btn-edit"
-                                    onclick="editData('stok',${item.id})"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    class="btn btn-danger"
-                                    onclick="deleteData('stok',${item.id})"
-                                >
-                                    Hapus
-                                </button>
-
-                            </div>
-                            `
-                            :
-                            ""
-                        }
-
-                    </td>
-
-                </tr>
-                `;
-
-            }
-        )
-        .join("");
-
+  const s=$("searchStok").value.toLowerCase(),tbody=$("tableStok");
+  const f=data.filter(x=>String(x.jenis).toLowerCase().includes(s));
+  if(!f.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Tidak ada data.</td></tr>';return;}
+  tbody.innerHTML=f.map(x=>{const akhir=Number(x.jumlah||0)-Number(x.keluar||0);return `<tr><td>${esc(x.jenis)}</td><td>${esc(x.jumlah)}</td><td>${esc(x.satuan)}</td><td>${esc(x.masuk)}</td><td>${esc(x.keluar)}</td><td><b>${akhir}</b></td><td class="admin-column">${currentRole==="admin"?`<div class="actions"><button class="btn btn-edit" onclick="editData('stok','${x.id}')">Edit</button><button class="btn btn-danger" onclick="deleteData('stok','${x.id}')">Hapus</button></div>`:""}</td></tr>`}).join("");
 }
-
-
-/* =====================================================
-   DISTRIBUSI
-===================================================== */
-
 function renderDistribusi(data){
-
-    const tbody =
-        document.getElementById(
-            "tableDistribusi"
-        );
-
-    const search =
-        document
-        .getElementById(
-            "searchDistribusi"
-        )
-        .value
-        .toLowerCase();
-
-
-    const filtered =
-        data.filter(
-            item =>
-                item.penerima
-                .toLowerCase()
-                .includes(search)
-                ||
-                item.jenis
-                .toLowerCase()
-                .includes(search)
-        );
-
-
-    if(filtered.length === 0){
-
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="7" class="empty">
-                    Tidak ada data.
-                </td>
-            </tr>`;
-
-        return;
-
-    }
-
-
-    tbody.innerHTML =
-        filtered.map(
-            item => {
-
-                return `
-                <tr>
-
-                    <td>${item.penerima}</td>
-
-                    <td>${item.lokasi}</td>
-
-                    <td>${item.jenis}</td>
-
-                    <td>${item.jumlah}</td>
-
-                    <td>${item.tanggal}</td>
-
-                    <td>${item.tujuan}</td>
-
-                    <td class="admin-column">
-
-                        ${
-                            currentRole === "admin"
-                            ?
-                            `
-                            <div class="actions">
-
-                                <button
-                                    class="btn btn-edit"
-                                    onclick="editData('distribusi',${item.id})"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    class="btn btn-danger"
-                                    onclick="deleteData('distribusi',${item.id})"
-                                >
-                                    Hapus
-                                </button>
-
-                            </div>
-                            `
-                            :
-                            ""
-                        }
-
-                    </td>
-
-                </tr>
-                `;
-
-            }
-        )
-        .join("");
-
+  const s=$("searchDistribusi").value.toLowerCase(),tbody=$("tableDistribusi");
+  const f=data.filter(x=>String(x.penerima).toLowerCase().includes(s)||String(x.jenis).toLowerCase().includes(s));
+  if(!f.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Tidak ada data.</td></tr>';return;}
+  tbody.innerHTML=f.map(x=>`<tr><td>${esc(x.penerima)}</td><td>${esc(x.lokasi)}</td><td>${esc(x.jenis)}</td><td>${esc(x.jumlah)}</td><td>${esc(x.tanggal)}</td><td>${esc(x.tujuan)}</td><td class="admin-column">${currentRole==="admin"?`<div class="actions"><button class="btn btn-edit" onclick="editData('distribusi','${x.id}')">Edit</button><button class="btn btn-danger" onclick="deleteData('distribusi','${x.id}')">Hapus</button></div>`:""}</td></tr>`).join("");
 }
-
-
-/* =====================================================
-   KEBUTUHAN
-===================================================== */
-
 function renderKebutuhan(data){
-
-    const tbody =
-        document.getElementById(
-            "tableKebutuhan"
-        );
-
-    const search =
-        document
-        .getElementById(
-            "searchKebutuhan"
-        )
-        .value
-        .toLowerCase();
-
-
-    const filtered =
-        data.filter(
-            item =>
-                item.tanaman
-                .toLowerCase()
-                .includes(search)
-                ||
-                item.petani
-                .toLowerCase()
-                .includes(search)
-        );
-
-
-    if(filtered.length === 0){
-
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="6" class="empty">
-                    Tidak ada data.
-                </td>
-            </tr>`;
-
-        return;
-
-    }
-
-
-    tbody.innerHTML =
-        filtered.map(
-            item => {
-
-                return `
-                <tr>
-
-                    <td>${item.tanaman}</td>
-
-                    <td>${item.varietas}</td>
-
-                    <td>${item.jumlah}</td>
-
-                    <td>${item.petani}</td>
-
-                    <td>${item.waktu}</td>
-
-                    <td class="admin-column">
-
-                        ${
-                            currentRole === "admin"
-                            ?
-                            `
-                            <div class="actions">
-
-                                <button
-                                    class="btn btn-edit"
-                                    onclick="editData('kebutuhan',${item.id})"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    class="btn btn-danger"
-                                    onclick="deleteData('kebutuhan',${item.id})"
-                                >
-                                    Hapus
-                                </button>
-
-                            </div>
-                            `
-                            :
-                            ""
-                        }
-
-                    </td>
-
-                </tr>
-                `;
-
-            }
-        )
-        .join("");
-
+  const s=$("searchKebutuhan").value.toLowerCase(),tbody=$("tableKebutuhan");
+  const f=data.filter(x=>String(x.tanaman).toLowerCase().includes(s)||String(x.petani).toLowerCase().includes(s));
+  if(!f.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Tidak ada data.</td></tr>';return;}
+  tbody.innerHTML=f.map(x=>`<tr><td>${esc(x.tanaman)}</td><td>${esc(x.varietas)}</td><td>${esc(x.jumlah)}</td><td>${esc(x.petani)}</td><td>${esc(x.waktu)}</td><td class="admin-column">${currentRole==="admin"?`<div class="actions"><button class="btn btn-edit" onclick="editData('kebutuhan','${x.id}')">Edit</button><button class="btn btn-danger" onclick="deleteData('kebutuhan','${x.id}')">Hapus</button></div>`:""}</td></tr>`).join("");
 }
-
-
-/* =====================================================
-   STATISTIK
-===================================================== */
-
-function updateStatistics(data){
-
-    document.getElementById(
-        "sProduksi"
-    ).textContent =
-        data.produksi.length;
-
-
-    document.getElementById(
-        "sStok"
-    ).textContent =
-        data.stok.reduce(
-            (total,item) =>
-                total +
-                (
-                    Number(item.jumlah)
-                    -
-                    Number(item.keluar)
-                ),
-            0
-        );
-
-
-    document.getElementById(
-        "sDistribusi"
-    ).textContent =
-        data.distribusi.length;
-
-
-    document.getElementById(
-        "sKebutuhan"
-    ).textContent =
-        data.kebutuhan.length;
-
+function updateStatistics(d){
+  $("sProduksi").textContent=d.produksi.length;
+  $("sStok").textContent=d.stok.reduce((t,x)=>t+Number(x.jumlah||0)-Number(x.keluar||0),0);
+  $("sDistribusi").textContent=d.distribusi.length;$("sKebutuhan").textContent=d.kebutuhan.length;
 }
-
-
-/* =====================================================
-   RINGKASAN STOK
-===================================================== */
-
 function renderStockSummary(data){
-
-    const element =
-        document.getElementById(
-            "stockSummary"
-        );
-
-
-    if(data.length === 0){
-
-        element.innerHTML =
-            `<div class="empty">
-                Belum ada data stok.
-            </div>`;
-
-        return;
-
-    }
-
-
-    const max =
-        Math.max(
-            ...data.map(
-                item =>
-                    Number(item.jumlah)
-                    -
-                    Number(item.keluar)
-            ),
-            1
-        );
-
-
-    element.innerHTML =
-        data.map(
-            item => {
-
-                const stok =
-                    Number(item.jumlah)
-                    -
-                    Number(item.keluar);
-
-                const persen =
-                    Math.max(
-                        0,
-                        Math.min(
-                            100,
-                            stok / max * 100
-                        )
-                    );
-
-
-                return `
-                <div class="stock-item">
-
-                    <div class="stock-header">
-
-                        <span>
-                            ${item.jenis}
-                        </span>
-
-                        <b>
-                            ${stok} ${item.satuan}
-                        </b>
-
-                    </div>
-
-                    <div class="bar">
-
-                        <i
-                            style="width:${persen}%"
-                        ></i>
-
-                    </div>
-
-                </div>
-                `;
-
-            }
-        )
-        .join("");
-
+  const el=$("stockSummary");if(!data.length){el.innerHTML='<div class="empty">Belum ada data stok.</div>';return;}
+  const max=Math.max(...data.map(x=>Number(x.jumlah||0)-Number(x.keluar||0)),1);
+  el.innerHTML=data.map(x=>{const stok=Number(x.jumlah||0)-Number(x.keluar||0);return `<div class="stock-item"><div class="stock-header"><span>${esc(x.jenis)}</span><b>${stok} ${esc(x.satuan)}</b></div><div class="bar"><i style="width:${Math.max(0,Math.min(100,stok/max*100))}%"></i></div></div>`}).join("");
+}
+function renderActivity(d){
+  const el=$("activity"),a=[];
+  d.produksi.slice(-3).forEach(x=>a.push(`🌾 Produksi ${esc(x.tanaman)}`));
+  d.distribusi.slice(-3).forEach(x=>a.push(`🚚 Distribusi kepada ${esc(x.penerima)}`));
+  el.innerHTML=a.length?a.slice(-5).reverse().map(x=>`<div style="padding:12px 0;border-bottom:1px solid #edf1ef;font-size:13px">${x}</div>`).join(""):'<div class="empty">Belum ada aktivitas.</div>';
 }
 
+function openModal(type,id=null){
+  if(currentRole!=="admin") return alert("Hanya Admin yang dapat mengubah data.");
+  currentType=type;editingId=id;$("modalTitle").textContent=id?"Edit Data":"Tambah Data";
+  let h="";
+  if(type==="produksi") h='<div class="field"><label>Tanaman</label><input name="tanaman" required></div><div class="field"><label>Varietas</label><input name="varietas" required></div><div class="field"><label>Luas (Ha)</label><input name="luas" type="number" step="0.01" required></div><div class="field"><label>Tanggal Tanam</label><input name="tanam" type="date" required></div><div class="field"><label>Perkiraan Produksi</label><input name="perkiraan" type="number" required></div><div class="field"><label>Realisasi</label><input name="realisasi" type="number" required></div><div class="field full"><label>Status</label><select name="status"><option>Berjalan</option><option>Selesai</option></select></div>';
+  if(type==="stok") h='<div class="field full"><label>Jenis / Varietas</label><input name="jenis" required></div><div class="field"><label>Jumlah Masuk</label><input name="jumlah" type="number" required></div><div class="field"><label>Satuan</label><input name="satuan" required></div><div class="field"><label>Tanggal Masuk</label><input name="masuk" type="date" required></div><div class="field"><label>Jumlah Keluar</label><input name="keluar" type="number" min="0" value="0" required></div>';
+  if(type==="distribusi") h='<div class="field"><label>Penerima</label><input name="penerima" required></div><div class="field"><label>Desa / Kecamatan</label><input name="lokasi" required></div><div class="field"><label>Jenis Benih</label><input name="jenis" required></div><div class="field"><label>Jumlah</label><input name="jumlah" type="number" required></div><div class="field"><label>Tanggal</label><input name="tanggal" type="date" required></div><div class="field"><label>Tujuan</label><input name="tujuan" required></div>';
+  if(type==="kebutuhan") h='<div class="field"><label>Tanaman</label><input name="tanaman" required></div><div class="field"><label>Varietas</label><input name="varietas" required></div><div class="field"><label>Jumlah</label><input name="jumlah" type="number" required></div><div class="field"><label>Kelompok / Petani</label><input name="petani" required></div><div class="field full"><label>Waktu Kebutuhan</label><input name="waktu" type="date" required></div>';
+  $("formFields").innerHTML=h;
+  if(id){const item=cloudData[type].find(x=>x.id===id);if(item) Object.keys(item).forEach(k=>{const el=document.querySelector(`[name="${k}"]`);if(el)el.value=item[k];});}
+  $("modal").classList.add("show");
+}
+function closeModal(){$("modal").classList.remove("show");$("dataForm").reset();editingId=null;currentType="";}
 
-/* =====================================================
-   AKTIVITAS
-===================================================== */
-
-function renderActivity(data){
-
-    const element =
-        document.getElementById(
-            "activity"
-        );
-
-
-    const aktivitas = [];
-
-
-    data.produksi
-        .slice(-3)
-        .forEach(
-            item => {
-
-                aktivitas.push(
-                    `🌾 Produksi ${item.tanaman}`
-                );
-
-            }
-        );
-
-
-    data.distribusi
-        .slice(-3)
-        .forEach(
-            item => {
-
-                aktivitas.push(
-                    `🚚 Distribusi kepada ${item.penerima}`
-                );
-
-            }
-        );
-
-
-    if(aktivitas.length === 0){
-
-        element.innerHTML =
-            `<div class="empty">
-                Belum ada aktivitas.
-            </div>`;
-
-        return;
-
-    }
-
-
-    element.innerHTML =
-        aktivitas
-        .slice(-5)
-        .reverse()
-        .map(
-            item =>
-                `
-                <div
-                    style="
-                    padding:12px 0;
-                    border-bottom:1px solid #edf1ef;
-                    font-size:13px;
-                    "
-                >
-                    ${item}
-                </div>
-                `
-        )
-        .join("");
-
+$("dataForm").addEventListener("submit",async e=>{
+  e.preventDefault();if(currentRole!=="admin")return;
+  const obj={};new FormData(e.currentTarget).forEach((v,k)=>obj[k]=v);
+  if(["stok","distribusi","kebutuhan"].includes(currentType)) obj.jumlah=Number(obj.jumlah||0);
+  if(currentType==="stok"){obj.jumlah=Number(obj.jumlah||0);obj.keluar=Number(obj.keluar||0);}
+  if(currentType==="produksi"){obj.luas=Number(obj.luas||0);obj.perkiraan=Number(obj.perkiraan||0);obj.realisasi=Number(obj.realisasi||0);}
+  try{await saveCloudData(currentType,obj);closeModal();await loadCloudData();alert("Data berhasil disimpan ke Firebase.");}
+  catch(e){console.error(e);alert("Gagal menyimpan data. Periksa Firestore Rules.");}
+});
+async function editData(type,id){openModal(type,id);}
+async function deleteData(type,id){
+  if(currentRole!=="admin")return alert("Hanya Admin yang dapat menghapus data.");
+  if(!confirm("Apakah Anda yakin ingin menghapus data ini?"))return;
+  try{await deleteCloudData(type,id);await loadCloudData();alert("Data berhasil dihapus.");}
+  catch(e){console.error(e);alert("Gagal menghapus data.");}
+}
+function contactAdmin(){
+  const url="https://wa.me/628116580780?text="+encodeURIComponent("Halo Admin SI-BENIH GABE, saya ingin bertanya mengenai sistem informasi data perbenihan.");
+  window.open(url,"_blank");
 }
 
-
-/* =====================================================
-   OPEN MODAL
-===================================================== */
-
-function openModal(
-    type,
-    id = null
-){
-
-    if(currentRole !== "admin"){
-
-        alert(
-            "Hanya Admin yang dapat mengubah data."
-        );
-
-        return;
-
-    }
-
-
-    currentType = type;
-
-    editingId = id;
-
-
-    const modal =
-        document.getElementById(
-            "modal"
-        );
-
-    const title =
-        document.getElementById(
-            "modalTitle"
-        );
-
-    const fields =
-        document.getElementById(
-            "formFields"
-        );
-
-
-    title.textContent =
-        id
-        ? "Edit Data"
-        : "Tambah Data";
-
-
-    let html = "";
-
-
-    if(type === "produksi"){
-
-        html = `
-
-        <div class="field">
-            <label>Tanaman</label>
-            <input
-                name="tanaman"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Varietas</label>
-            <input
-                name="varietas"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Luas (Ha)</label>
-            <input
-                name="luas"
-                type="number"
-                step="0.01"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Tanggal Tanam</label>
-            <input
-                name="tanam"
-                type="date"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Perkiraan Produksi</label>
-            <input
-                name="perkiraan"
-                type="number"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Realisasi</label>
-            <input
-                name="realisasi"
-                type="number"
-                required
-            >
-        </div>
-
-        <div class="field full">
-            <label>Status</label>
-
-            <select name="status">
-
-                <option value="Berjalan">
-                    Berjalan
-                </option>
-
-                <option value="Selesai">
-                    Selesai
-                </option>
-
-            </select>
-
-        </div>
-
-        `;
-
-    }
-
-
-    if(type === "stok"){
-
-        html = `
-
-        <div class="field full">
-            <label>Jenis / Varietas</label>
-            <input
-                name="jenis"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Jumlah Masuk</label>
-            <input
-                name="jumlah"
-                type="number"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Satuan</label>
-            <input
-                name="satuan"
-                placeholder="Kg / Unit / Karung"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Tanggal Masuk</label>
-            <input
-                name="masuk"
-                type="date"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Jumlah Keluar</label>
-            <input
-                name="keluar"
-                type="number"
-                value="0"
-                min="0"
-                required
-            >
-        </div>
-
-        `;
-
-    }
-
-
-    if(type === "distribusi"){
-
-        html = `
-
-        <div class="field">
-            <label>Penerima</label>
-            <input
-                name="penerima"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Desa / Kecamatan</label>
-            <input
-                name="lokasi"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Jenis Benih</label>
-            <input
-                name="jenis"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Jumlah</label>
-            <input
-                name="jumlah"
-                type="number"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Tanggal</label>
-            <input
-                name="tanggal"
-                type="date"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Tujuan</label>
-            <input
-                name="tujuan"
-                placeholder="Penanaman"
-                required
-            >
-        </div>
-
-        `;
-
-    }
-
-
-    if(type === "kebutuhan"){
-
-        html = `
-
-        <div class="field">
-            <label>Tanaman</label>
-            <input
-                name="tanaman"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Varietas</label>
-            <input
-                name="varietas"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Jumlah</label>
-            <input
-                name="jumlah"
-                type="number"
-                required
-            >
-        </div>
-
-        <div class="field">
-            <label>Kelompok / Petani</label>
-            <input
-                name="petani"
-                required
-            >
-        </div>
-
-        <div class="field full">
-            <label>Waktu Kebutuhan</label>
-            <input
-                name="waktu"
-                type="date"
-                required
-            >
-        </div>
-
-        `;
-
-    }
-
-
-    fields.innerHTML = html;
-
-
-    /* ISI DATA SAAT EDIT */
-
-    if(id){
-
-        const data =
-            loadData()[type];
-
-        const item =
-            data.find(
-                item =>
-                    item.id === id
-            );
-
-
-        if(item){
-
-            Object.keys(item)
-                .forEach(
-                    key => {
-
-                        const input =
-                            document.querySelector(
-                                `[name="${key}"]`
-                            );
-
-                        if(input){
-
-                            input.value =
-                                item[key];
-
-                        }
-
-                    }
-                );
-
-        }
-
-    }
-
-
-    modal.classList.add(
-        "show"
-    );
-
-}
-
-
-/* =====================================================
-   CLOSE MODAL
-===================================================== */
-
-function closeModal(){
-
-    document
-        .getElementById("modal")
-        .classList.remove(
-            "show"
-        );
-
-    document
-        .getElementById("dataForm")
-        .reset();
-
-    editingId = null;
-
-}
-
-
-/* =====================================================
-   SUBMIT FORM
-===================================================== */
-
-document
-    .getElementById("dataForm")
-    .addEventListener(
-        "submit",
-        function(event){
-
-            event.preventDefault();
-
-
-            if(currentRole !== "admin"){
-
-                return;
-
-            }
-
-
-            const data =
-                loadData();
-
-
-            const formData =
-                new FormData(
-                    this
-                );
-
-
-            const object = {};
-
-
-            formData.forEach(
-                (value,key) => {
-
-                    object[key] =
-                        value;
-
-                }
-            );
-
-
-            if(
-                currentType === "stok" ||
-                currentType === "distribusi" ||
-                currentType === "kebutuhan"
-            ){
-
-                if(object.jumlah){
-
-                    object.jumlah =
-                        Number(
-                            object.jumlah
-                        );
-
-                }
-
-            }
-
-
-            if(
-                currentType === "stok"
-            ){
-
-                object.keluar =
-                    Number(
-                        object.keluar || 0
-                    );
-
-            }
-
-
-            if(editingId){
-
-                object.id =
-                    editingId;
-
-
-                const index =
-                    data[currentType]
-                    .findIndex(
-                        item =>
-                            item.id === editingId
-                    );
-
-
-                if(index !== -1){
-
-                    data[currentType][index] =
-                        object;
-
-                }
-
-            }else{
-
-                object.id =
-                    Date.now();
-
-                data[currentType]
-                    .push(object);
-
-            }
-
-
-            saveData(data);
-
-            closeModal();
-
-            renderAll();
-
-            alert(
-                "Data berhasil disimpan."
-            );
-
-        }
-    );
-
-
-/* =====================================================
-   EDIT
-===================================================== */
-
-function editData(
-    type,
-    id
-){
-
-    if(currentRole !== "admin"){
-
-        alert(
-            "Hanya Admin yang dapat mengedit data."
-        );
-
-        return;
-
-    }
-
-
-    openModal(
-        type,
-        id
-    );
-
-}
-
-
-/* =====================================================
-   DELETE
-===================================================== */
-
-function deleteData(
-    type,
-    id
-){
-
-    if(currentRole !== "admin"){
-
-        alert(
-            "Hanya Admin yang dapat menghapus data."
-        );
-
-        return;
-
-    }
-
-
-    const yakin =
-        confirm(
-            "Apakah Anda yakin ingin menghapus data ini?"
-        );
-
-
-    if(!yakin){
-
-        return;
-
-    }
-
-
-    const data =
-        loadData();
-
-
-    data[type] =
-        data[type].filter(
-            item =>
-                item.id !== id
-        );
-
-
-    saveData(data);
-
-    renderAll();
-
-
-    alert(
-        "Data berhasil dihapus."
-    );
-
-}
-
-
-/* =====================================================
-   MULAI APLIKASI
-===================================================== */
-
-checkLogin();
-
+document.addEventListener("DOMContentLoaded",()=>{
+  $("loginButton").addEventListener("click",login);
+  $("registerButton").addEventListener("click",registerAccount);
+  $("showRegisterButton").addEventListener("click",showRegister);
+  $("showLoginButton").addEventListener("click",showLogin);
+  $("forgotPasswordButton").addEventListener("click",resetPassword);
+  $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+  $("registerPassword2").addEventListener("keydown",e=>{if(e.key==="Enter")registerAccount();});
+  showToday();
+  if(!firebaseConfigured)showLoginMessage("Isi firebaseConfig pada bagian JavaScript sebelum digunakan.");
+});
+
+Object.assign(window,{showPage,toggleSide,logout,openModal,closeModal,editData,deleteData,contactAdmin,renderAll});
 </script>
 
 </body>
